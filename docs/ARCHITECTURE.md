@@ -1,6 +1,6 @@
 # Architecture
 
-Human-First AI is organized as a pipeline of four modules plus a cross-cutting transparency layer. Each module is deliberately small and single-purpose so it can be read, audited, and replaced independently.
+Human-First AI is organized as a pipeline of five modules — Perception, Values Engine, Memory, Action, and Transparency — plus a P.A.I.H.I. Scorer that turns the framework into a live, computed score. Each module is deliberately small and single-purpose so it can be read, audited, and replaced independently.
 
 ## 1. Perception (`src/human_first_ai/core`)
 
@@ -41,6 +41,18 @@ Intent → Values Engine → (Deny → stop, log, explain)
                                                         ↓
                                               Transparency Log (always)
 ```
+
+## 6. PAIHI Scorer (`src/human_first_ai/paihi`)
+
+Takes the `runs` list an `Orchestrator` accumulates (one `RunRecord` per processed `Intent`), plus its `TransparencyLog` and `MemoryStore`, and computes a `PAIHIScore`: a 0-100 value for each of Proof, Alignment, Integrity, Humanity, and Impact, plus an overall average.
+
+- **Proof** — ratio of log entries to runs (was everything actually recorded?).
+- **Alignment** — ratio of decisions that carried a real, non-empty reason.
+- **Integrity** — 0 if any long-term memory item exists without consent, else 100 (the `MemoryStore` already refuses these at write time — this makes that guarantee visible).
+- **Humanity** — of the runs that offered a checkpoint, the ratio where the human's answer was actually honored.
+- **Impact** — ratio of runs where the Action Layer actually executed (not just approved, denied, or stopped at a checkpoint).
+
+This is a reference scorer, not a black box — every dimension is a small function in `paihi/score.py` you can read in under a minute and replace with your own heuristic.
 
 ## Extending this
 
