@@ -1,6 +1,6 @@
 # Human-First AI
 
-**A reference architecture and framework for building AI systems that put people — not just performance — at the center.**
+**The reference architecture for AltmanAI's P.A.I.H.I. framework — a small, readable, working implementation of what "human-first AI" actually means in code, not just in a pitch deck.**
 
 Built by [AltmanAI](https://github.com/altmanAI), a project of Altman Family Group LLC.
 
@@ -10,15 +10,19 @@ Built by [AltmanAI](https://github.com/altmanAI), a project of Altman Family Gro
 
 Most AI systems are optimized for capability first and humanity second — if at all. Human-First AI flips that: every architectural decision starts from the question *"does this respect the person on the other end?"* before *"is this impressive?"*
 
-This repo is both a **philosophy** and a **working reference implementation** — a small, readable core you can fork, learn from, or build production systems on top of.
+This repo is both a **philosophy** and a **working reference implementation** — a small, readable core you can fork, learn from, or build production systems on top of. It's also the place where AltmanAI's **P.A.I.H.I. framework** stops being a slide and becomes code that actually runs and scores a session.
 
-## The five commitments
+## P.A.I.H.I. — the framework this implements
 
-1. **Consent over assumption** — the system never silently expands what it remembers or does without the human knowing.
-2. **Transparency over magic** — every consequential action is logged and explainable in plain language, not hidden behind a black box.
-3. **Human-in-the-loop by default** — irreversible or external actions require a checkpoint; the human always has a steering wheel.
-4. **Memory with boundaries** — long-term memory is opt-in, inspectable, and forgettable. Nothing is permanent unless the human wants it to be.
-5. **Values as code, not vibes** — alignment isn't a prompt suffix. It's a first-class module that every action passes through.
+| | Dimension | What it means here |
+|---|---|---|
+| **P** | **Proof** | Every decision is grounded in a real, inspectable log — not a black box. |
+| **A** | **Alignment** | Every action passes through an explicit Values Engine before anything happens — alignment is a first-class module, not a prompt suffix. |
+| **I** | **Integrity** | Memory is consent-based and boundaried. Nothing is persisted long-term without explicit, inspectable consent. |
+| **H** | **Humanity** | Irreversible or external actions require a human checkpoint. The human always has a steering wheel, and the system honors whatever they decide. |
+| **I** | **Impact** | Did the system actually complete something real — not just talk, decline, or stall? |
+
+`human_first_ai.paihi.PAIHIScorer` computes a live 0–100 score across all five dimensions from an actual run of the pipeline — see [Quickstart](#quickstart) below.
 
 ## Architecture
 
@@ -29,21 +33,25 @@ This repo is both a **philosophy** and a **working reference implementation** �
                  └─────────┬──────────┘
                            ▼
                  ┌────────────────────┐
-                 │   Values Engine    │◀── consent + policy config
+                 │   Values Engine    │◀── consent + policy config      [Alignment]
                  │  (guardrail checks) │
                  └─────────┬──────────┘
                            ▼
                  ┌────────────────────┐
-                 │   Memory Layer     │◀── inspectable, forgettable
+                 │   Memory Layer     │◀── inspectable, forgettable     [Integrity]
                  │ (short/long term)   │
                  └─────────┬──────────┘
                            ▼
                  ┌────────────────────┐
-                 │   Action Layer     │──▶ human checkpoint (if needed)
+                 │   Action Layer     │──▶ human checkpoint (if needed) [Humanity]
                  └─────────┬──────────┘
                            ▼
                  ┌────────────────────┐
-                 │  Transparency Log  │──▶ human-readable audit trail
+                 │  Transparency Log  │──▶ human-readable audit trail   [Proof]
+                 └─────────┬──────────┘
+                           ▼
+                 ┌────────────────────┐
+                 │   PAIHI Scorer     │──▶ 0-100 score, 5 dimensions    [Impact + all]
                  └────────────────────┘
 ```
 
@@ -54,8 +62,21 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full breakdown and [`
 ```bash
 git clone https://github.com/altmanAI/human-first-ai.git
 cd human-first-ai
-pip install -e .
+pip install -e ".[dev]"
 python -m human_first_ai.demo
+```
+
+The demo processes three intents (informational, irreversible-with-checkpoint, boundary-violating) and ends by printing a real **P.A.I.H.I. Score** for that session:
+
+```
+--- P.A.I.H.I. Score for this session ---
+P — Proof:      100.0/100  (grounded in a real, inspectable log)
+A — Alignment:  100.0/100  (every action passed the Values Engine)
+I — Integrity:  100.0/100  (no memory persisted without consent)
+H — Humanity:   100.0/100  (checkpoints honored, human stayed in control)
+I — Impact:      66.7/100  (real actions completed, not just talk)
+----------------------------------------------------
+Overall P.A.I.H.I. Score: 93.3/100
 ```
 
 ## Project layout
@@ -66,13 +87,14 @@ src/human_first_ai/
   values/         the alignment / guardrail engine
   memory/         consent-based, inspectable memory store
   transparency/   audit logging and plain-language explanations
+  paihi/          the P.A.I.H.I. Scorer — turns the framework into a number
 docs/             architecture + vision docs
-tests/            unit tests for each module
+tests/            unit tests for each module (20 tests, all passing)
 ```
 
 ## Status
 
-Early, intentionally minimal reference implementation. The goal isn't feature completeness — it's a clean pattern others can adopt, extend, or challenge.
+Early, intentionally minimal reference implementation. The goal isn't feature completeness — it's a clean pattern others can adopt, extend, challenge, or score their own systems against.
 
 ## Contributing
 
