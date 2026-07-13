@@ -1,20 +1,30 @@
-name: CI
+# Temporary containment: GitHub-hosted jobs are currently failing before the
+# first step across multiple altmanAI repositories. Keep this workflow manual
+# until the account/repository Actions restriction is cleared in GitHub.
+name: CI (manual while hosted runners are restricted)
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Install
-        run: pip install -e ".[dev]"
-      - name: Test
-        run: pytest -v
+          cache: pip
+
+      - name: Install package and test dependencies
+        run: python -m pip install --upgrade pip && python -m pip install -e ".[dev]"
+
+      - name: Run test suite
+        run: python -m pytest -v
